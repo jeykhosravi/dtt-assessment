@@ -5,6 +5,27 @@
         <h1>Houses</h1>
       </div>
 
+      <!-- Search Input -->
+      <div class="search-bar">
+        <div class="search-input-container">
+          <img src="/images/search.png" alt="Search" class="search-icon" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search for a house"
+            class="search-input"
+          />
+          <button v-if="searchQuery" @click="searchQuery = ''" class="clear-btn">
+            <img src="/images/clear.png" alt="Clear search" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Results indicator -->
+      <h2 v-if="searchQuery" class="results-indicator">
+        {{ filteredHouses.length }} {{ filteredHouses.length === 1 ? 'result' : 'results' }} found
+      </h2>
+
       <div v-if="loading" class="loading">
         <p>Loading houses...</p>
       </div>
@@ -18,15 +39,22 @@
         <p>No houses available at the moment.</p>
       </div>
 
+      <!-- No search results -->
+      <div v-else-if="searchQuery && filteredHouses.length === 0" class="no-results">
+        <img src="/images/no result.png" alt="No results" class="no-results-image" />
+        <p class="no-results-title">No results found.</p>
+        <p class="no-results-subtitle">Please try another keyword.</p>
+      </div>
+
       <div v-else class="houses-list">
-        <HouseCard v-for="house in houses" :key="house.id" :house="house" />
+        <HouseCard v-for="house in filteredHouses" :key="house.id" :house="house" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import HouseCard from '@/components/HouseCard.vue'
 import { getHouses, type House } from '@/services/api'
 
@@ -49,8 +77,29 @@ const fetchHouses = async () => {
   }
 }
 
-onMounted(() => {
-  fetchHouses()
+// search houses input
+const searchQuery = ref('')
+
+// fetch houses
+onMounted(async () => {
+  try {
+    houses.value = await getHouses()
+  } catch {
+    error.value = 'Failed to load houses.'
+  } finally {
+    loading.value = false
+  }
+})
+
+// computed filtered houses
+const filteredHouses = computed(() => {
+  if (!searchQuery.value.trim()) return houses.value
+
+  return houses.value.filter((house) =>
+    `${house.streetName} ${house.houseNumber} ${house.zip} ${house.city}`
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase()),
+  )
 })
 </script>
 
@@ -77,6 +126,87 @@ onMounted(() => {
   font-size: var(--h1-desktop);
   font-family: var(--font-primary);
   font-weight: 700;
+}
+
+.search-bar {
+  margin-bottom: 1rem;
+}
+
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 40px;
+  border: 1px solid var(--color-tertiary-light);
+  background-color: var(--color-tertiary-light);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: var(--font-secondary);
+  &:focus {
+    outline: none;
+  }
+}
+
+.clear-btn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.clear-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-family: var(--font-secondary);
+}
+
+.no-results-image {
+  width: 300px;
+  height: 100%;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.no-results-title {
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.no-results-subtitle {
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 .houses-count {
@@ -153,6 +283,19 @@ onMounted(() => {
   .error,
   .no-houses {
     font-size: var(--body-mobile);
+  }
+
+  .no-results-image {
+    width: 200px;
+    height: 100%;
+  }
+
+  .no-results-title {
+    font-size: 16px;
+  }
+
+  .no-results-subtitle {
+    font-size: 14px;
   }
 
   .retry-btn {
