@@ -1,7 +1,11 @@
 <template>
   <div class="house-card" @click="navigateToDetails">
     <div class="house-image">
-      <img :src="house.image" :alt="`House at ${house.streetName}`" @error="handleImageError" />
+      <img
+        :src="getImageUrl(house.image)"
+        :alt="`House at ${house.streetName}`"
+        @error="handleImageError"
+      />
     </div>
     <div class="house-info">
       <div class="house-header">
@@ -81,6 +85,28 @@ const handleImageError = (event: Event) => {
 
 const formatPrice = (price: number): string => {
   return price.toLocaleString('en-US')
+}
+
+const getImageUrl = (imageUrl: string): string => {
+  // If no image URL is provided, return the fallback
+  if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined') {
+    console.log('No valid image URL found, using fallback')
+    return 'https://images.unsplash.com/photo-1558618047-d1c00293b19c?w=400&h=300&fit=crop'
+  }
+
+  // If it's already a full URL, use it as is
+  if (imageUrl.startsWith('http')) {
+    return imageUrl
+  }
+
+  // Otherwise, prefix with the API URL
+  const apiBaseUrl = import.meta.env.VITE_API_URL as string
+  const fullUrl = imageUrl.startsWith('/')
+    ? `${apiBaseUrl}${imageUrl}`
+    : `${apiBaseUrl}/${imageUrl}`
+
+  console.log('Image URL resolved to:', fullUrl)
+  return fullUrl
 }
 </script>
 

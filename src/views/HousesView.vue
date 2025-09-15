@@ -3,6 +3,11 @@
     <div class="page-container">
       <div class="houses-header">
         <h1>Houses</h1>
+        <!-- Create button for desktop -->
+        <button class="desktop-create-btn" @click="handleCreateHouse">
+          <img src="/images/plus-white.png" alt="Add house" class="plus-icon" />
+          CREATE NEW
+        </button>
         <!-- Plus button for mobile only -->
         <button class="mobile-plus-btn" @click="handleCreateHouse">
           <img src="/images/plus.png" alt="Add house" />
@@ -86,8 +91,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import HouseCard from '@/components/HouseCard.vue'
 import { getHouses, type House } from '@/services/api'
+
+const router = useRouter()
 
 const houses = ref<House[]>([])
 const loading = ref(false)
@@ -131,8 +139,7 @@ const toggleSort = (type: 'price' | 'size') => {
 
 // Handle create house action (placeholder for future implementation)
 const handleCreateHouse = () => {
-  // TODO: Implement create house functionality
-  console.log('Create house clicked')
+  router.push('/houses/create')
 }
 
 // fetch houses
@@ -194,7 +201,7 @@ const filteredHouses = computed(() => {
 .houses-header {
   margin-bottom: 30px;
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
   position: relative;
 }
@@ -205,6 +212,41 @@ const filteredHouses = computed(() => {
   font-size: var(--h1-desktop);
   font-family: var(--font-primary);
   font-weight: 700;
+}
+
+.desktop-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: var(--btn-desktop);
+  font-family: var(--font-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.desktop-create-btn .plus-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.desktop-create-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(235, 84, 64, 0.3);
+}
+
+.desktop-create-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(235, 84, 64, 0.3);
 }
 
 .mobile-plus-btn {
@@ -437,6 +479,14 @@ const filteredHouses = computed(() => {
     justify-content: center;
     align-items: center;
     position: relative;
+  }
+
+  .houses-header h1 {
+    font-size: var(--h1-mobile);
+  }
+
+  .desktop-create-btn {
+    display: none; /* Hidden on mobile */
   }
 
   .mobile-plus-btn {
