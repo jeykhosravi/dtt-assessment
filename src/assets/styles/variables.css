@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,500&family=Open+Sans:wght@400;600&display=swap');
+
+:root {
+  /* Colors */
+  --color-primary: #EB5440;
+  --color-secondary: #4A4B4C;
+  --color-tertiary-light: #E8E8E8;
+  --color-tertiary-dark: #C3C3C3;
+  --color-link: #067BC2;
+
+  --color-bg1: #F6F6F6;
+  --color-bg2: #FFFFFF;
+
+  --text-primary: #000000;
+  --text-secondary: #4A4B4C;
+
+  /* Typography */
+  --font-primary: 'Montserrat', sans-serif;
+  --font-secondary: 'Open Sans', sans-serif;
+
+  /* Headings */
+  --h1-desktop: 32px;
+  --h1-mobile: 18px;
+  --h2-desktop: 22px;
+  --h2-mobile: 14px;
+
+  /* Menu */
+  --menu-active-desktop: 18px;
+  --menu-inactive-desktop: 18px;
+  --menu-mobile: 12px;
+
+  /* Buttons & Tabs */
+  --btn-desktop: 18px;
+  --btn-mobile: 12px;
+
+  /* Back button label */
+  --back-button-desktop: 16px;
+
+  /* Input fields */
+  --input-label-desktop: 14px;
+  --input-label-mobile: 12px;
+  --input-field-desktop: 14px;
+
+  /* Body text */
+  --body-desktop: 18px;
+  --body-mobile: 12px;
+
+  /* Listing info */
+  --listing-desktop: 16px;
+  --listing-mobile: 12px;
+
+  /* Empty state */
+  --empty-desktop: 18px;
+  --empty-mobile: 14px;
+
+  /* Error */
+  --error-desktop: 14px;
+  --error-mobile: 12px;
+}
