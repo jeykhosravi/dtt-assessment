@@ -5,11 +5,21 @@
     </div>
     <div class="house-info">
       <div class="house-header">
-        <h3 class="house-address">
-          {{ house.streetName }} {{ house.houseNumber
-          }}<span v-if="house.numberAddition"> {{ house.numberAddition }}</span>
-        </h3>
-        <p class="house-price">{{ formatPrice(house.price) }}</p>
+        <div class="address-with-buttons">
+          <h3 class="house-address">
+            {{ house.streetName }} {{ house.houseNumber
+            }}<span v-if="house.numberAddition"> {{ house.numberAddition }}</span>
+          </h3>
+          <div class="action-buttons">
+            <button class="action-btn edit-btn" @click.stop="editHouse">
+              <img src="/images/edit.png" alt="Edit" />
+            </button>
+            <button class="action-btn delete-btn" @click.stop="deleteHouse">
+              <img src="/images/delete.png" alt="Delete" />
+            </button>
+          </div>
+        </div>
+        <p class="house-price">€ {{ formatPrice(house.price) }}</p>
       </div>
 
       <p class="postal-city">{{ house.zip }} {{ house.city }}</p>
@@ -34,7 +44,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import type { House } from '@/services/api'
+import { apiRequest, type House } from '@/services/api'
 
 interface Props {
   house: House
@@ -45,6 +55,23 @@ const router = useRouter()
 
 const navigateToDetails = () => {
   router.push(`/houses/${props.house.id}`)
+}
+
+const editHouse = () => {
+  router.push(`/houses/${props.house.id}/edit`)
+}
+
+const deleteHouse = async () => {
+  const confirmed = confirm('Are you sure you want to delete this house?')
+  if (!confirmed) return
+
+  try {
+    await apiRequest(`/houses/${props.house.id}`, { method: 'DELETE' })
+    // Refresh the page or emit an event to parent component to update the list
+    window.location.reload()
+  } catch {
+    alert('Failed to delete the house.')
+  }
 }
 
 const handleImageError = (event: Event) => {
@@ -98,6 +125,13 @@ const formatPrice = (price: number): string => {
   justify-content: center;
 }
 
+.address-with-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
 .house-address {
   margin: 0;
   font-size: 16px;
@@ -105,6 +139,32 @@ const formatPrice = (price: number): string => {
   color: var(--text-primary);
   font-family: var(--font-primary); /* Montserrat */
   line-height: 1.3;
+  flex: 1;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn:hover img {
+  opacity: 1;
 }
 
 .house-price {
