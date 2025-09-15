@@ -124,7 +124,7 @@ h2 {
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   body {
     font-size: var(--body-mobile);
   }

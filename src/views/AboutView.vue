@@ -24,7 +24,7 @@
   padding: 20px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .about-page {
     padding-top: 80px;
   }

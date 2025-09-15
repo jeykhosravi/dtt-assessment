@@ -3,6 +3,10 @@
     <div class="page-container">
       <div class="houses-header">
         <h1>Houses</h1>
+        <!-- Plus button for mobile only -->
+        <button class="mobile-plus-btn" @click="handleCreateHouse">
+          <img src="/images/plus.png" alt="Add house" />
+        </button>
       </div>
 
       <!-- Search and Sort Controls -->
@@ -125,6 +129,12 @@ const toggleSort = (type: 'price' | 'size') => {
   }
 }
 
+// Handle create house action (placeholder for future implementation)
+const handleCreateHouse = () => {
+  // TODO: Implement create house functionality
+  console.log('Create house clicked')
+}
+
 // fetch houses
 onMounted(async () => {
   try {
@@ -183,6 +193,10 @@ const filteredHouses = computed(() => {
 
 .houses-header {
   margin-bottom: 30px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  position: relative;
 }
 
 .houses-header h1 {
@@ -191,6 +205,33 @@ const filteredHouses = computed(() => {
   font-size: var(--h1-desktop);
   font-family: var(--font-primary);
   font-weight: 700;
+}
+
+.mobile-plus-btn {
+  display: none; /* Hidden on desktop */
+  position: absolute;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.mobile-plus-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mobile-plus-btn:hover {
+  transform: scale(1.05);
+}
+
+.mobile-plus-btn:active {
+  transform: scale(0.95);
 }
 
 .controls-bar {
@@ -380,9 +421,9 @@ const filteredHouses = computed(() => {
   opacity: 0.9;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .houses-page {
-    padding-top: 80px;
+    padding-top: 20px;
   }
 
   .page-container {
@@ -391,11 +432,17 @@ const filteredHouses = computed(() => {
   }
 
   .houses-header {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
   }
 
-  .houses-header h1 {
-    font-size: var(--h1-mobile);
+  .mobile-plus-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .controls-bar {

@@ -78,23 +78,10 @@ const $route = useRoute()
   font-weight: 700;
 }
 
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .nav-container {
-    padding: 0 16px;
-    height: 60px;
-  }
-
-  .logo-image {
-    height: 32px;
-  }
-
-  .nav-menu {
-    gap: 24px;
-  }
-
-  .nav-link {
-    font-size: var(--menu-mobile);
+/* Mobile responsiveness - Hide navigation header on mobile */
+@media (max-width: 640px) {
+  .navigation-header {
+    display: none;
   }
 }
 </style>

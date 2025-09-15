@@ -1,5 +1,5 @@
 <template>
-  <div class="house-card">
+  <div class="house-card" @click="navigateToDetails">
     <div class="house-image">
       <img :src="house.image" :alt="`House at ${house.streetName}`" @error="handleImageError" />
     </div>
@@ -9,7 +9,7 @@
           {{ house.streetName }} {{ house.houseNumber
           }}<span v-if="house.numberAddition"> {{ house.numberAddition }}</span>
         </h3>
-        <p class="house-price">€ {{ formatPrice(house.price) }}</p>
+        <p class="house-price">{{ formatPrice(house.price) }}</p>
       </div>
 
       <p class="postal-city">{{ house.zip }} {{ house.city }}</p>
@@ -33,13 +33,19 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import type { House } from '@/services/api'
 
 interface Props {
   house: House
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const router = useRouter()
+
+const navigateToDetails = () => {
+  router.push(`/houses/${props.house.id}`)
+}
 
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement

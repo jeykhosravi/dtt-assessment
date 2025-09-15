@@ -26,7 +26,6 @@ export interface HouseApiResponse {
   madeByMe: boolean
 }
 
-
 export interface House {
   id: number
   image: string
@@ -40,8 +39,10 @@ export interface House {
   numberAddition?: string | null
   city: string
   zip: string
+  constructionYear: number
+  hasGarage: boolean
+  madeByMe: boolean
 }
-
 
 // generic request function
 export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -79,6 +80,38 @@ export async function getHouses(): Promise<House[]> {
     numberAddition: h.location.houseNumberAddition,
     city: h.location.city,
     zip: h.location.zip,
+    constructionYear: h.constructionYear,
+    hasGarage: h.hasGarage,
+    madeByMe: h.madeByMe,
   }))
 }
 
+export async function getHouseById(id: number): Promise<House> {
+  console.log('Fetching house with ID:', id) // Debug log
+  const apiHouses = await apiRequest<HouseApiResponse[]>(`/houses/${id}`)
+  console.log('API response:', apiHouses) // Debug log
+
+  if (!apiHouses.length) {
+    throw new Error('House not found')
+  }
+
+  const apiHouse = apiHouses[0]
+
+  return {
+    id: apiHouse.id,
+    image: apiHouse.image,
+    price: apiHouse.price,
+    bedrooms: apiHouse.rooms.bedrooms,
+    bathrooms: apiHouse.rooms.bathrooms,
+    size: apiHouse.size,
+    description: apiHouse.description,
+    streetName: apiHouse.location.street,
+    houseNumber: apiHouse.location.houseNumber,
+    numberAddition: apiHouse.location.houseNumberAddition,
+    city: apiHouse.location.city,
+    zip: apiHouse.location.zip,
+    constructionYear: apiHouse.constructionYear,
+    hasGarage: apiHouse.hasGarage,
+    madeByMe: apiHouse.madeByMe,
+  }
+}
