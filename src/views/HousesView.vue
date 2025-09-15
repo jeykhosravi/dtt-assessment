@@ -5,18 +5,45 @@
         <h1>Houses</h1>
       </div>
 
-      <!-- Search Input -->
-      <div class="search-bar">
-        <div class="search-input-container">
-          <img src="/images/search.png" alt="Search" class="search-icon" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search for a house"
-            class="search-input"
-          />
-          <button v-if="searchQuery" @click="searchQuery = ''" class="clear-btn">
-            <img src="/images/clear.png" alt="Clear search" />
+      <!-- Search and Sort Controls -->
+      <div class="controls-bar">
+        <!-- Search Input -->
+        <div class="search-bar">
+          <div class="search-input-container">
+            <img src="/images/search.png" alt="Search" class="search-icon" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search for a house"
+              class="search-input"
+            />
+            <button v-if="searchQuery" @click="searchQuery = ''" class="clear-btn">
+              <img src="/images/clear.png" alt="Clear search" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Sort Buttons -->
+        <div class="sort-bar">
+          <button
+            @click="toggleSort('price')"
+            class="sort-btn"
+            :class="{ active: sortBy === 'price' }"
+          >
+            Price
+            <span v-if="sortBy === 'price'" class="sort-direction">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </button>
+          <button
+            @click="toggleSort('size')"
+            class="sort-btn"
+            :class="{ active: sortBy === 'size' }"
+          >
+            Size
+            <span v-if="sortBy === 'size'" class="sort-direction">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
           </button>
         </div>
       </div>
@@ -61,6 +88,9 @@ import { getHouses, type House } from '@/services/api'
 const houses = ref<House[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+const searchQuery = ref('')
+const sortBy = ref<'price' | 'size' | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
 
 const fetchHouses = async () => {
   loading.value = true
@@ -77,8 +107,23 @@ const fetchHouses = async () => {
   }
 }
 
-// search houses input
-const searchQuery = ref('')
+// toggle sort function
+const toggleSort = (type: 'price' | 'size') => {
+  if (sortBy.value === type) {
+    if (sortDirection.value === 'asc') {
+      // First click: ascending
+      sortDirection.value = 'desc'
+    } else {
+      // Second click: descending -> clear sort
+      sortBy.value = null
+      sortDirection.value = 'asc'
+    }
+  } else {
+    // If clicking a different button, set new sort type and default to ascending
+    sortBy.value = type
+    sortDirection.value = 'asc'
+  }
+}
 
 // fetch houses
 onMounted(async () => {
@@ -91,15 +136,35 @@ onMounted(async () => {
   }
 })
 
-// computed filtered houses
+// computed filtered and sorted houses
 const filteredHouses = computed(() => {
-  if (!searchQuery.value.trim()) return houses.value
+  let result = houses.value
 
-  return houses.value.filter((house) =>
-    `${house.streetName} ${house.houseNumber} ${house.zip} ${house.city}`
-      .toLowerCase()
-      .includes(searchQuery.value.toLowerCase()),
-  )
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    result = result.filter((house) =>
+      `${house.streetName} ${house.houseNumber} ${house.zip} ${house.city}`
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase()),
+    )
+  }
+
+  // Apply sorting
+  if (sortBy.value) {
+    result = [...result].sort((a, b) => {
+      let comparison = 0
+
+      if (sortBy.value === 'price') {
+        comparison = a.price - b.price
+      } else if (sortBy.value === 'size') {
+        comparison = a.size - b.size
+      }
+
+      return sortDirection.value === 'desc' ? -comparison : comparison
+    })
+  }
+
+  return result
 })
 </script>
 
@@ -128,8 +193,18 @@ const filteredHouses = computed(() => {
   font-weight: 700;
 }
 
-.search-bar {
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 300px;
 }
 
 .search-input-container {
@@ -180,6 +255,58 @@ const filteredHouses = computed(() => {
 .clear-btn img {
   width: 18px;
   height: 18px;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: none;
+  background-color: #c8c8c8;
+  color: white;
+  font-size: 14px;
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100px;
+  border-radius: 0;
+}
+
+.sort-btn:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.sort-btn:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.sort-btn:hover {
+  opacity: 0.9;
+}
+
+.sort-btn:focus {
+  outline: none;
+}
+
+.sort-btn.active {
+  background-color: #e65541;
+  color: white;
+}
+
+.sort-direction {
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .no-results {
@@ -269,6 +396,27 @@ const filteredHouses = computed(() => {
 
   .houses-header h1 {
     font-size: var(--h1-mobile);
+  }
+
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .search-bar {
+    min-width: auto;
+  }
+
+  .sort-bar {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .sort-btn {
+    flex: 1;
+    justify-content: center;
+    min-width: 80px;
   }
 
   .houses-count {
