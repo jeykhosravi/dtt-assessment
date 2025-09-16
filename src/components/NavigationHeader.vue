@@ -8,8 +8,13 @@
         <router-link to="/" class="nav-link" :class="{ active: isHousesActive }">
           Houses
         </router-link>
+
         <router-link to="/about" class="nav-link" :class="{ active: isAboutActive }">
           About
+        </router-link>
+        <router-link to="/favorites" class="nav-link" :class="{ active: isFavoritesActive }">
+          Favorites
+          <span v-if="favoriteCount > 0" class="favorite-count">{{ favoriteCount }}</span>
         </router-link>
       </nav>
     </div>
@@ -19,8 +24,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useFavoritesStore } from '@/stores/favorites'
 
 const route = useRoute()
+const favoritesStore = useFavoritesStore()
 
 // Check if we're on a houses related page (/, /houses, or any house detail/edit page)
 const isHousesActive = computed(() => {
@@ -32,10 +39,18 @@ const isHousesActive = computed(() => {
   )
 })
 
+// Check if we're on the favorites page
+const isFavoritesActive = computed(() => {
+  return route.path === '/favorites' || route.name === 'favorites'
+})
+
 // Only active when specifically on the about page
 const isAboutActive = computed(() => {
   return route.path === '/about' || route.name === 'about'
 })
+
+// Get favorite count from store
+const favoriteCount = computed(() => favoritesStore.favoriteCount)
 </script>
 
 <style scoped>
@@ -83,6 +98,9 @@ const isAboutActive = computed(() => {
   padding: 10px 0;
   position: relative;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-link:hover {
@@ -92,6 +110,25 @@ const isAboutActive = computed(() => {
 .nav-link.active {
   color: var(--text-primary);
   font-weight: 700;
+}
+
+.favorite-count {
+  position: absolute;
+  top: -6px;
+  right: -16px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 5px;
+  border-radius: 12px;
+  min-width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 1px solid var(--color-bg2);
 }
 
 /* Mobile responsiveness - Hide navigation header on mobile */

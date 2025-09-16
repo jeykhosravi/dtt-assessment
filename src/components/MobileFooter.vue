@@ -8,7 +8,7 @@
           class="footer-icon"
           :class="{ active: isHomePage }"
         />
-      </router-link>
+      </router-link>    
       <router-link to="/about" class="footer-item">
         <img
           src="/images/info-mobile.png"
@@ -17,6 +17,22 @@
           :class="{ active: isAboutPage }"
         />
       </router-link>
+      <router-link to="/favorites" class="footer-item">
+        <div class="favorites-icon-container">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="footer-icon heart-icon"
+            :class="{ active: isFavoritesPage }"
+          >
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+          <span v-if="favoriteCount > 0" class="footer-badge">{{ favoriteCount }}</span>
+        </div>
+      </router-link>
     </div>
   </footer>
 </template>
@@ -24,16 +40,24 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useFavoritesStore } from '@/stores/favorites'
 
 const route = useRoute()
+const favoritesStore = useFavoritesStore()
 
 const isHomePage = computed(() => {
   return route.path === '/' || route.path === '/houses' || route.path.startsWith('/houses/')
 })
 
+const isFavoritesPage = computed(() => {
+  return route.path === '/favorites'
+})
+
 const isAboutPage = computed(() => {
   return route.path === '/about'
 })
+
+const favoriteCount = computed(() => favoritesStore.favoriteCount)
 </script>
 
 <style scoped>
@@ -90,6 +114,41 @@ const isAboutPage = computed(() => {
 
 .footer-item:active {
   transform: scale(0.95);
+}
+
+.favorites-icon-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heart-icon {
+  color: #ccc;
+}
+
+.heart-icon.active {
+  color: #e74c3c !important;
+  filter: none !important;
+}
+
+.footer-badge {
+  position: absolute;
+  top: -10px;
+  right: -20px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 10px;
+  min-width: 12px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid var(--color-bg2);
 }
 
 /* Show footer only on mobile devices */

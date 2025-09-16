@@ -21,6 +21,24 @@
           </h3>
           <div class="action-buttons">
             <button
+              class="action-btn like-btn"
+              @click.stop="toggleLike"
+              :class="{ liked: isLiked }"
+              title="Add to favorites"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="20"
+                height="20"
+              >
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                />
+              </svg>
+            </button>
+            <button
               class="action-btn edit-btn"
               @click.stop="editHouse"
               :disabled="!house.madeByMe"
@@ -64,9 +82,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiRequest, type House } from '@/services/api'
+import { useFavoritesStore } from '@/stores/favorites'
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
 
 interface Props {
@@ -76,6 +95,14 @@ interface Props {
 const props = defineProps<Props>()
 const router = useRouter()
 const showDeleteModal = ref(false)
+const favoritesStore = useFavoritesStore()
+
+// Like functionality
+const isLiked = computed(() => favoritesStore.isFavorite(props.house.id))
+
+const toggleLike = () => {
+  favoritesStore.toggleFavorite(props.house) // pass full object instead of id
+}
 
 const navigateToDetails = () => {
   router.push(`/houses/${props.house.id}`)
@@ -278,6 +305,23 @@ const getImageUrl = (imageUrl: string): string => {
   opacity: 1;
 }
 
+.like-btn {
+  color: #ccc;
+  transition: color 0.2s ease;
+}
+
+.like-btn:hover {
+  color: #ed9595;
+}
+
+.like-btn.liked {
+  color: #e74c3c;
+}
+
+.like-btn.liked:hover {
+  color: #c0392b;
+}
+
 .house-price {
   margin: 4px 0;
   font-size: 14px;
@@ -315,16 +359,16 @@ const getImageUrl = (imageUrl: string): string => {
 }
 @media (max-width: 600px) {
   .house-card {
-  display: flex;
-  background: var(--color-bg2);
-  padding: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  cursor: pointer;
-}
+    display: flex;
+    background: var(--color-bg2);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+    cursor: pointer;
+  }
 }
 </style>
