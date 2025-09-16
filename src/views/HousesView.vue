@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HouseCard from '@/components/HouseCard.vue'
 import { getHouses, type House } from '@/services/api'
@@ -142,6 +142,14 @@ const handleCreateHouse = () => {
   router.push('/houses/create')
 }
 
+// Create the event handler function
+const handleHouseDeleted = (event: Event) => {
+  const customEvent = event as CustomEvent
+  const deletedHouseId = customEvent.detail
+  // Remove the deleted house from the local state
+  houses.value = houses.value.filter((house) => house.id !== deletedHouseId)
+}
+
 // fetch houses
 onMounted(async () => {
   try {
@@ -151,6 +159,14 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  // Add event listener for house deletion
+  window.addEventListener('house-deleted', handleHouseDeleted)
+})
+
+// Clean up event listener on component unmount
+onUnmounted(() => {
+  window.removeEventListener('house-deleted', handleHouseDeleted)
 })
 
 // computed filtered and sorted houses

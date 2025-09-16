@@ -1,5 +1,10 @@
 <template>
-  <div class="house-card" @click="navigateToDetails">
+  <div class="house-card" :data-house-id="house.id" @click="navigateToDetails">
+    <DeleteConfirmationModal
+      :show="showDeleteModal"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
     <div class="house-image">
       <img
         :src="getImageUrl(house.image)"
@@ -15,11 +20,23 @@
             }}<span v-if="house.numberAddition"> {{ house.numberAddition }}</span>
           </h3>
           <div class="action-buttons">
-            <button class="action-btn edit-btn" @click.stop="editHouse">
+            <button
+              class="action-btn edit-btn"
+              @click.stop="editHouse"
+              :disabled="!house.madeByMe"
+              :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
+            >
               <img src="/images/edit.png" alt="Edit" />
+              <span class="tooltip" v-if="!house.madeByMe">You cannot edit this listing</span>
             </button>
-            <button class="action-btn delete-btn" @click.stop="deleteHouse">
+            <button
+              class="action-btn delete-btn"
+              @click.stop="deleteHouse($event)"
+              :disabled="!house.madeByMe"
+              :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
+            >
               <img src="/images/delete.png" alt="Delete" />
+              <span class="tooltip" v-if="!house.madeByMe">You cannot delete this listing</span>
             </button>
           </div>
         </div>
@@ -47,8 +64,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiRequest, type House } from '@/services/api'
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
 
 interface Props {
   house: House
@@ -56,25 +75,63 @@ interface Props {
 
 const props = defineProps<Props>()
 const router = useRouter()
+const showDeleteModal = ref(false)
 
 const navigateToDetails = () => {
   router.push(`/houses/${props.house.id}`)
 }
 
 const editHouse = () => {
+  if (!props.house.madeByMe) return
   router.push(`/houses/${props.house.id}/edit`)
 }
 
-const deleteHouse = async () => {
-  const confirmed = confirm('Are you sure you want to delete this house?')
-  if (!confirmed) return
+const deleteHouse = (event: Event) => {
+  event.stopPropagation() // Prevent navigation to details
+  if (!props.house.madeByMe) return
 
+  // Show the delete confirmation modal
+  showDeleteModal.value = true
+}
+
+const cancelDelete = () => {
+  showDeleteModal.value = false
+}
+
+const confirmDelete = async () => {
   try {
-    await apiRequest(`/houses/${props.house.id}`, { method: 'DELETE' })
-    // Refresh the page or emit an event to parent component to update the list
-    window.location.reload()
-  } catch {
-    alert('Failed to delete the house.')
+    console.log(`Attempting to delete house with ID: ${props.house.id}`)
+
+    // Be explicit with the URL and include a trailing slash if needed
+    const endpoint = `/houses/${props.house.id}/`
+
+    await apiRequest(endpoint, {
+      method: 'DELETE',
+      // Explicitly set headers to ensure proper formatting
+      headers: {
+        'X-Api-Key': import.meta.env.VITE_API_KEY as string,
+      },
+    })
+
+    console.log(`Successfully deleted house with ID: ${props.house.id}`)
+    showDeleteModal.value = false
+
+    // Emit an event that the parent (HousesView) can listen for
+    const event = new CustomEvent('house-deleted', { detail: props.house.id })
+    window.dispatchEvent(event)
+
+    // Add a fallback in case the event system doesn't trigger a UI update
+    setTimeout(() => {
+      if (document.contains(document.querySelector(`[data-house-id="${props.house.id}"]`))) {
+        console.log('House still visible in DOM, refreshing page')
+        window.location.reload()
+      }
+    }, 500)
+  } catch (error) {
+    console.error('Failed to delete the house:', error)
+    alert('Failed to delete the house. Please try again.')
+    // Close the modal after the alert is dismissed
+    showDeleteModal.value = false
   }
 }
 
@@ -182,6 +239,7 @@ const getImageUrl = (imageUrl: string): string => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .action-btn img {
@@ -190,6 +248,33 @@ const getImageUrl = (imageUrl: string): string => {
 }
 
 .action-btn:hover img {
+  opacity: 1;
+}
+
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.action-btn .tooltip {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+
+.action-btn:disabled:hover .tooltip {
+  visibility: visible;
   opacity: 1;
 }
 
@@ -227,5 +312,19 @@ const getImageUrl = (imageUrl: string): string => {
   width: 14px;
   height: 14px;
   opacity: 0.8;
+}
+@media (max-width: 600px) {
+  .house-card {
+  display: flex;
+  background: var(--color-bg2);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
 }
 </style>

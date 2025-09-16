@@ -1,5 +1,11 @@
 <template>
   <div class="house-details-page">
+    <DeleteConfirmationModal
+      :show="showDeleteModal"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
+
     <!-- Desktop back button -->
     <button class="back-btn desktop-back" @click="$router.push('/houses')">
       <img src="/images/back.png" alt="Back" class="back-icon" />
@@ -24,11 +30,23 @@
         </button>
 
         <div class="mobile-actions-overlay">
-          <button class="mobile-edit-btn" @click="editHouse">
+          <button
+            class="mobile-edit-btn"
+            @click="editHouse"
+            :disabled="!house.madeByMe"
+            :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
+          >
             <img src="/images/edit-white.png" alt="Edit" class="mobile-overlay-icon" />
+            <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
           </button>
-          <button class="mobile-delete-btn" @click="deleteHouse">
+          <button
+            class="mobile-delete-btn"
+            @click="deleteHouse($event)"
+            :disabled="!house.madeByMe"
+            :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
+          >
             <img src="/images/delete-white.png" alt="Delete" class="mobile-overlay-icon" />
+            <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
           </button>
         </div>
       </div>
@@ -41,11 +59,23 @@
               }}{{ house.numberAddition ? house.numberAddition : '' }}
             </h2>
             <div class="actions-buttons">
-              <button class="edit-btn" @click="editHouse">
+              <button
+                class="edit-btn"
+                @click="editHouse"
+                :disabled="!house.madeByMe"
+                :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
+              >
                 <img src="/images/edit.png" alt="Edit" class="action-icon" />
+                <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
               </button>
-              <button class="delete-btn" @click="deleteHouse">
+              <button
+                class="delete-btn"
+                @click="deleteHouse($event)"
+                :disabled="!house.madeByMe"
+                :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
+              >
                 <img src="/images/delete.png" alt="Delete" class="action-icon" />
+                <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
               </button>
             </div>
           </div>
@@ -103,6 +133,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getHouseById, apiRequest, type House } from '@/services/api'
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -110,6 +141,7 @@ const router = useRouter()
 const house = ref<House | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
+const showDeleteModal = ref(false)
 
 const formatPrice = (price: number): string => {
   return price.toLocaleString('en-US')
@@ -128,19 +160,49 @@ onMounted(async () => {
 
 function editHouse() {
   if (!house.value) return
+  if (!house.value.madeByMe) return
   router.push(`/houses/${house.value.id}/edit`)
 }
 
-async function deleteHouse() {
+function deleteHouse(event?: Event) {
+  if (event) event.stopPropagation()
   if (!house.value) return
-  const confirmed = confirm('Are you sure you want to delete this house?')
-  if (!confirmed) return
+  if (!house.value.madeByMe) return
+  // Show the delete confirmation modal instead of using the browser's confirm dialog
+  showDeleteModal.value = true
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+}
+
+async function confirmDelete() {
+  if (!house.value) return
 
   try {
-    await apiRequest(`/houses/${house.value.id}`, { method: 'DELETE' })
-    router.push('/houses')
-  } catch {
-    alert('Failed to delete the house.')
+    console.log(`Attempting to delete house with ID: ${house.value.id}`)
+
+    // Be explicit with the URL and include a trailing slash if needed
+    const endpoint = `/houses/${house.value.id}/`
+
+    await apiRequest(endpoint, {
+      method: 'DELETE',
+      // Explicitly set headers to ensure proper formatting
+      headers: {
+        'X-Api-Key': import.meta.env.VITE_API_KEY as string,
+      },
+    })
+
+    console.log(`Successfully deleted house with ID: ${house.value.id}`)
+    showDeleteModal.value = false
+
+    // Navigate to houses route using replace to avoid affecting the history
+    router.replace('/houses')
+  } catch (error) {
+    console.error('Failed to delete the house:', error)
+    alert('Failed to delete the house. Please try again.')
+    // Close the modal after showing the alert
+    showDeleteModal.value = false
   }
 }
 </script>
@@ -221,6 +283,37 @@ async function deleteHouse() {
   align-items: center;
   justify-content: center;
   padding: 0;
+  position: relative;
+}
+
+.edit-btn:disabled,
+.delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tooltip {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 10;
+}
+
+.edit-btn:disabled:hover .tooltip,
+.delete-btn:disabled:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }
 
 .action-icon {
@@ -384,6 +477,20 @@ async function deleteHouse() {
     justify-content: center;
     cursor: pointer;
     padding: 0;
+    position: relative;
+  }
+
+  .mobile-edit-btn:disabled,
+  .mobile-delete-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .mobile-edit-btn .tooltip,
+  .mobile-delete-btn .tooltip {
+    top: 40px;
+    right: -40px;
+    width: 120px;
   }
 
   .mobile-overlay-icon {

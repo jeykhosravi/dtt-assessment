@@ -32,6 +32,12 @@ const router = createRouter({
       component: HouseDetails,
       props: true,
     },
+    {
+      path: '/houses/:id/edit',
+      name: 'EditHouse',
+      component: CreateHouseView,
+      props: true,
+    },
   ],
 })
 

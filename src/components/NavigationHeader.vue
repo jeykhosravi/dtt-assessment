@@ -5,10 +5,10 @@
         <img src="/images/dtt-logo.png" alt="DTT" class="logo-image" />
       </div>
       <nav class="nav-menu">
-        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+        <router-link to="/" class="nav-link" :class="{ active: isHousesActive }">
           Houses
         </router-link>
-        <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
+        <router-link to="/about" class="nav-link" :class="{ active: isAboutActive }">
           About
         </router-link>
       </nav>
@@ -17,9 +17,25 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-const $route = useRoute()
+const route = useRoute()
+
+// Check if we're on a houses related page (/, /houses, or any house detail/edit page)
+const isHousesActive = computed(() => {
+  return (
+    route.path === '/' ||
+    route.path === '/houses' ||
+    route.path.startsWith('/houses/') ||
+    route.name === 'houses'
+  )
+})
+
+// Only active when specifically on the about page
+const isAboutActive = computed(() => {
+  return route.path === '/about' || route.name === 'about'
+})
 </script>
 
 <style scoped>

@@ -7,7 +7,7 @@
           <img src="/images/back.png" alt="Back" class="back-icon" />
           Back to overview
         </button>
-        <h1>Create new listing</h1>
+        <h1>{{ isEditMode ? 'Edit listing' : 'Create new listing' }}</h1>
       </div>
 
       <!-- Form -->
@@ -206,7 +206,15 @@
         <!-- Submit Button -->
         <div class="form-actions">
           <button type="submit" class="submit-btn" :disabled="isSubmitting || !isFormValid">
-            {{ isSubmitting ? 'POSTING...' : 'POST' }}
+            {{
+              isSubmitting
+                ? isEditMode
+                  ? 'SAVING...'
+                  : 'POSTING...'
+                : isEditMode
+                  ? 'SAVE'
+                  : 'POST'
+            }}
           </button>
         </div>
       </form>
@@ -215,11 +223,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { createHouse, type CreateHouseRequest } from '@/services/api'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { createOrUpdateHouse, getHouseById, type CreateHouseRequest } from '@/services/api'
 
 const router = useRouter()
+const route = useRoute()
+const isEditMode = computed(() => route.path.includes('/edit'))
+const houseId = computed(() => (route.params.id ? parseInt(route.params.id as string) : undefined))
 
 // Form data
 const form = reactive({
@@ -239,20 +250,28 @@ const form = reactive({
 })
 
 const isFormValid = computed(() => {
-  return (
+  // Basic validation for all required fields
+  const basicValidation =
     form.streetName.trim() &&
     form.houseNumber &&
     form.zip.trim() &&
     form.city.trim() &&
     form.price &&
     form.size &&
-    form.bedrooms &&
-    form.bathrooms &&
+    form.bedrooms !== '' &&
+    form.bedrooms !== null &&
+    !isNaN(Number(form.bedrooms)) &&
+    form.bathrooms !== '' &&
+    form.bathrooms !== null &&
+    !isNaN(Number(form.bathrooms)) &&
     form.constructionYear &&
     form.hasGarage !== '' &&
-    form.description.trim() &&
-    form.image
-  )
+    form.description.trim()
+
+  // Image is required in create mode, but optional in edit mode if there's already an image
+  const imageValidation = form.image || (isEditMode.value && imagePreview.value)
+
+  return basicValidation && imageValidation
 })
 
 // Form validation
@@ -313,6 +332,12 @@ const validateForm = (): boolean => {
     isValid = false
   }
 
+  // Special handling for image in edit mode - don't require image if we already have one
+  if (!isEditMode.value && !form.image) {
+    errors.image = 'Image is required'
+    isValid = false
+  }
+
   const houseNumber = Number(form.houseNumber)
   if (!form.houseNumber || isNaN(houseNumber) || houseNumber <= 0) {
     errors.houseNumber = 'House number is required'
@@ -342,13 +367,13 @@ const validateForm = (): boolean => {
   }
 
   const bedrooms = Number(form.bedrooms)
-  if (!form.bedrooms || isNaN(bedrooms) || bedrooms <= 0) {
+  if (form.bedrooms === '' || isNaN(bedrooms) || bedrooms < 0) {
     errors.bedrooms = 'Number of bedrooms is required'
     isValid = false
   }
 
   const bathrooms = Number(form.bathrooms)
-  if (!form.bathrooms || isNaN(bathrooms) || bathrooms <= 0) {
+  if (form.bathrooms === '' || isNaN(bathrooms) || bathrooms < 0) {
     errors.bathrooms = 'Number of bathrooms is required'
     isValid = false
   }
@@ -369,16 +394,50 @@ const validateForm = (): boolean => {
     isValid = false
   }
 
-  if (!form.image) {
-    errors.image = 'Image is required'
-    isValid = false
-  }
+  // Image validation is handled above
 
   return isValid
 }
 
+// Load existing house data if in edit mode
+onMounted(async () => {
+  if (isEditMode.value && houseId.value) {
+    try {
+      const house = await getHouseById(houseId.value)
+
+      // Fill form with house data
+      form.streetName = house.streetName
+      form.houseNumber = house.houseNumber
+      form.numberAddition = house.numberAddition || ''
+      form.zip = house.zip
+      form.city = house.city
+      form.price = house.price
+      form.size = house.size
+      form.bedrooms = house.bedrooms
+      form.bathrooms = house.bathrooms
+      form.constructionYear = house.constructionYear
+      form.hasGarage = house.hasGarage ? 'true' : 'false'
+      form.description = house.description
+
+      // Set image preview if there's an existing image
+      if (house.image) {
+        imagePreview.value = house.image
+        // In edit mode, image is optional (to keep existing one)
+      }
+    } catch (error) {
+      console.error('Error loading house data:', error)
+      router.push('/houses')
+    }
+  }
+})
+
 // Submit handler
 const handleSubmit = async () => {
+  // In edit mode, image is optional if there's already an image
+  if (isEditMode.value && imagePreview.value && !form.image) {
+    delete errors.image
+  }
+
   if (!validateForm()) {
     return
   }
@@ -386,6 +445,10 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
+    // If we're in edit mode and there's no new image but there is an existing image preview,
+    // we should send a null for the image to indicate we want to keep the existing image
+    const imageToSubmit = isEditMode.value && !form.image && imagePreview.value ? null : form.image
+
     const houseData: CreateHouseRequest = {
       streetName: form.streetName,
       houseNumber: Number(form.houseNumber),
@@ -399,16 +462,16 @@ const handleSubmit = async () => {
       constructionYear: Number(form.constructionYear),
       hasGarage: form.hasGarage === 'true',
       description: form.description,
-      image: form.image!,
+      image: imageToSubmit as File, // TypeScript needs the cast, but API will handle null
     }
 
-    const newHouse = await createHouse(houseData)
+    const house = await createOrUpdateHouse(houseData, isEditMode.value ? houseId.value : undefined)
 
-    // Redirect to the newly created house details page
-    router.push(`/houses/${newHouse.id}`)
+    // Redirect to the house details page
+    router.push(`/houses/${house.id}`)
   } catch (error) {
-    console.error('Error creating house:', error)
-    errors.submit = 'Failed to create house. Please try again.'
+    console.error(`Error ${isEditMode.value ? 'updating' : 'creating'} house:`, error)
+    errors.submit = `Failed to ${isEditMode.value ? 'update' : 'create'} house. Please try again.`
   } finally {
     isSubmitting.value = false
   }
