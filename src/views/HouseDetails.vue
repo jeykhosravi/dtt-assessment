@@ -20,109 +20,123 @@
     <div v-if="loading" class="loading">Loading house details...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="!house" class="not-found">House not found.</div>
-    <div v-else class="house-details">
-      <div class="house-image-container">
-        <img :src="house.image" :alt="`House at ${house.streetName}`" class="house-image" />
+    <div v-else class="house-details-container">
+      <div class="house-details">
+        <div class="house-image-container">
+          <img :src="house.image" :alt="`House at ${house.streetName}`" class="house-image" />
 
-        <!-- Mobile absolute buttons on image -->
-        <button class="mobile-back-overlay" @click="$router.push('/houses')">
-          <img src="/images/back-white.png" alt="Back" class="mobile-overlay-icon" />
-        </button>
+          <!-- Mobile absolute buttons on image -->
+          <button class="mobile-back-overlay" @click="$router.push('/houses')">
+            <img src="/images/back-white.png" alt="Back" class="mobile-overlay-icon" />
+          </button>
 
-        <div class="mobile-actions-overlay">
-          <button
-            class="mobile-edit-btn"
-            @click="editHouse"
-            :disabled="!house.madeByMe"
-            :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
-          >
-            <img src="/images/edit-white.png" alt="Edit" class="mobile-overlay-icon" />
-            <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
-          </button>
-          <button
-            class="mobile-delete-btn"
-            @click="deleteHouse($event)"
-            :disabled="!house.madeByMe"
-            :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
-          >
-            <img src="/images/delete-white.png" alt="Delete" class="mobile-overlay-icon" />
-            <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
-          </button>
+          <div class="mobile-actions-overlay">
+            <button
+              class="mobile-edit-btn"
+              @click="editHouse"
+              :disabled="!house.madeByMe"
+              :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
+            >
+              <img src="/images/edit-white.png" alt="Edit" class="mobile-overlay-icon" />
+              <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
+            </button>
+            <button
+              class="mobile-delete-btn"
+              @click="deleteHouse($event)"
+              :disabled="!house.madeByMe"
+              :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
+            >
+              <img src="/images/delete-white.png" alt="Delete" class="mobile-overlay-icon" />
+              <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="house-info">
+          <div class="address-section">
+            <div class="address-header">
+              <h2 class="house-address">
+                {{ house.streetName }} {{ house.houseNumber
+                }}{{ house.numberAddition ? house.numberAddition : '' }}
+              </h2>
+              <div class="actions-buttons">
+                <button
+                  class="edit-btn"
+                  @click="editHouse"
+                  :disabled="!house.madeByMe"
+                  :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
+                >
+                  <img src="/images/edit.png" alt="Edit" class="action-icon" />
+                  <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
+                </button>
+                <button
+                  class="delete-btn"
+                  @click="deleteHouse($event)"
+                  :disabled="!house.madeByMe"
+                  :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
+                >
+                  <img src="/images/delete.png" alt="Delete" class="action-icon" />
+                  <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
+                </button>
+              </div>
+            </div>
+            <div class="location-info">
+              <img src="/images/location.png" alt="Location" class="detail-icon" />
+              <span class="postal-code">{{ house.zip }}</span>
+              <span class="city">{{ house.city }}</span>
+            </div>
+          </div>
+
+          <!-- Details section with two rows -->
+          <div class="details-section">
+            <!-- First row: Price, Size, Construction -->
+            <div class="details-row">
+              <div class="detail-item price-item">
+                <img src="/images/price.png" alt="Price" class="detail-icon" />
+                <span> {{ formatPrice(house.price) }}</span>
+              </div>
+              <div class="detail-item">
+                <img src="/images/size.png" alt="Size" class="detail-icon" />
+                <span>{{ house.size }} m²</span>
+              </div>
+              <div class="detail-item">
+                <img src="/images/construction.png" alt="Built" class="detail-icon" />
+                <span>Built in {{ house.constructionYear }}</span>
+              </div>
+            </div>
+
+            <!-- Second row: Bedrooms, Bathrooms, Garage -->
+            <div class="details-row">
+              <div class="detail-item">
+                <img src="/images/bed.png" alt="Bedrooms" class="detail-icon" />
+                <span>{{ house.bedrooms }}</span>
+              </div>
+              <div class="detail-item">
+                <img src="/images/bath.png" alt="Bathrooms" class="detail-icon" />
+                <span>{{ house.bathrooms }}</span>
+              </div>
+              <div class="detail-item">
+                <img src="/images/garage.png" alt="Garage" class="detail-icon" />
+                <span>{{ house.hasGarage ? 'Yes' : 'No' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="description-section">
+            <p class="description">{{ house.description }}</p>
+          </div>
         </div>
       </div>
 
-      <div class="house-info">
-        <div class="address-section">
-          <div class="address-header">
-            <h2 class="house-address">
-              {{ house.streetName }} {{ house.houseNumber
-              }}{{ house.numberAddition ? house.numberAddition : '' }}
-            </h2>
-            <div class="actions-buttons">
-              <button
-                class="edit-btn"
-                @click="editHouse"
-                :disabled="!house.madeByMe"
-                :title="house.madeByMe ? 'Edit listing' : 'You cannot edit this listing'"
-              >
-                <img src="/images/edit.png" alt="Edit" class="action-icon" />
-                <span v-if="!house.madeByMe" class="tooltip">You cannot edit this listing</span>
-              </button>
-              <button
-                class="delete-btn"
-                @click="deleteHouse($event)"
-                :disabled="!house.madeByMe"
-                :title="house.madeByMe ? 'Delete listing' : 'You cannot delete this listing'"
-              >
-                <img src="/images/delete.png" alt="Delete" class="action-icon" />
-                <span v-if="!house.madeByMe" class="tooltip">You cannot delete this listing</span>
-              </button>
-            </div>
-          </div>
-          <div class="location-info">
-            <img src="/images/location.png" alt="Location" class="detail-icon" />
-            <span class="postal-code">{{ house.zip }}</span>
-            <span class="city">{{ house.city }}</span>
-          </div>
-        </div>
-
-        <!-- Details section with two rows -->
-        <div class="details-section">
-          <!-- First row: Price, Size, Construction -->
-          <div class="details-row">
-            <div class="detail-item price-item">
-              <img src="/images/price.png" alt="Price" class="detail-icon" />
-              <span> {{ formatPrice(house.price) }}</span>
-            </div>
-            <div class="detail-item">
-              <img src="/images/size.png" alt="Size" class="detail-icon" />
-              <span>{{ house.size }} m²</span>
-            </div>
-            <div class="detail-item">
-              <img src="/images/construction.png" alt="Built" class="detail-icon" />
-              <span>Built in {{ house.constructionYear }}</span>
-            </div>
-          </div>
-
-          <!-- Second row: Bedrooms, Bathrooms, Garage -->
-          <div class="details-row">
-            <div class="detail-item">
-              <img src="/images/bed.png" alt="Bedrooms" class="detail-icon" />
-              <span>{{ house.bedrooms }}</span>
-            </div>
-            <div class="detail-item">
-              <img src="/images/bath.png" alt="Bathrooms" class="detail-icon" />
-              <span>{{ house.bathrooms }}</span>
-            </div>
-            <div class="detail-item">
-              <img src="/images/garage.png" alt="Garage" class="detail-icon" />
-              <span>{{ house.hasGarage ? 'Yes' : 'No' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="description-section">
-          <p class="description">{{ house.description }}</p>
+      <!-- Recommended for you section -->
+      <div v-if="recommendedHouses.length > 0" class="recommended-section">
+        <h3 class="recommended-title">Recommended for you</h3>
+        <div class="recommended-cards">
+          <RecommendedCard
+            v-for="recommendedHouse in recommendedHouses"
+            :key="recommendedHouse.id"
+            :house="recommendedHouse"
+          />
         </div>
       </div>
     </div>
@@ -132,13 +146,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getHouseById, apiRequest, type House } from '@/services/api'
+import { getHouseById, getHouses, apiRequest, type House } from '@/services/api'
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue'
+import RecommendedCard from '@/components/RecommendedCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const house = ref<House | null>(null)
+const recommendedHouses = ref<House[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const showDeleteModal = ref(false)
@@ -147,10 +163,53 @@ const formatPrice = (price: number): string => {
   return price.toLocaleString('en-US')
 }
 
+const getRecommendedHouses = async (currentHouse: House) => {
+  try {
+    const allHouses = await getHouses()
+
+    // Filter out the current house and get up to 3 recommendations
+    const otherHouses = allHouses.filter((h) => h.id !== currentHouse.id)
+
+    // Simple recommendation logic: prioritize houses in the same city, then similar price range
+    const sameCity = otherHouses.filter((h) => h.city === currentHouse.city)
+    const similarPrice = otherHouses.filter(
+      (h) => Math.abs(h.price - currentHouse.price) <= currentHouse.price * 0.3, // Within 30% price range
+    )
+
+    // Combine and deduplicate recommendations
+    const recommendations = new Set<House>()
+
+    // First priority: same city
+    sameCity.slice(0, 2).forEach((h) => recommendations.add(h))
+
+    // Second priority: similar price
+    similarPrice.slice(0, 3 - recommendations.size).forEach((h) => recommendations.add(h))
+
+    // Fill remaining slots with any other houses
+    const remaining = 3 - recommendations.size
+    if (remaining > 0) {
+      otherHouses
+        .filter((h) => !recommendations.has(h))
+        .slice(0, remaining)
+        .forEach((h) => recommendations.add(h))
+    }
+
+    recommendedHouses.value = Array.from(recommendations).slice(0, 3)
+  } catch (error) {
+    console.error('Failed to fetch recommended houses:', error)
+    recommendedHouses.value = []
+  }
+}
+
 onMounted(async () => {
   try {
     const id = Number(route.params.id)
     house.value = await getHouseById(id)
+
+    // Fetch recommendations after getting the current house
+    if (house.value) {
+      await getRecommendedHouses(house.value)
+    }
   } catch {
     error.value = 'Failed to load house details.'
   } finally {
@@ -254,9 +313,16 @@ async function confirmDelete() {
   color: var(--text-secondary);
 }
 
+.house-details-container {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
 .house-details {
   display: flex;
   flex-direction: column;
+  flex: 1;
   max-width: 700px;
   overflow: hidden;
 }
@@ -408,10 +474,37 @@ async function confirmDelete() {
   font-size: 14px;
 }
 
+.recommended-section {
+  flex-shrink: 0;
+  width: 400px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.recommended-title {
+  font-family: var(--font-primary);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 24px 0;
+}
+
+.recommended-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* Mobile responsive */
 @media (max-width: 640px) {
   .house-details-page {
     padding: 0;
+  }
+
+  .house-details-container {
+    flex-direction: column;
+    gap: 0;
   }
 
   /* Hide desktop back button on mobile */
@@ -501,6 +594,24 @@ async function confirmDelete() {
   .house-details {
     max-width: 100%;
     position: relative;
+  }
+
+  .recommended-section {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .recommended-title {
+    font-size: 16px;
+    padding: 8px;
+    margin-bottom: 16px;
+  }
+
+  .recommended-cards {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    gap: 12px;
   }
 
   .house-image-container {
