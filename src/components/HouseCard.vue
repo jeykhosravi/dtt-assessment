@@ -58,7 +58,7 @@
             </button>
           </div>
         </div>
-        <p class="house-price">€ {{ formatPrice(house.price) }}</p>
+        <p class="house-price">{{ formatPrice(house.price) }}</p>
       </div>
 
       <p class="postal-city">{{ house.zip }} {{ house.city }}</p>
@@ -167,8 +167,9 @@ const handleImageError = (event: Event) => {
   img.src = 'https://images.unsplash.com/photo-1558618047-d1c00293b19c?w=400&h=300&fit=crop'
 }
 
+// getting price formatted in euros instead of hard coding the euro sign
 const formatPrice = (price: number): string => {
-  return price.toLocaleString('en-US')
+  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(price)
 }
 
 const getImageUrl = (imageUrl: string): string => {

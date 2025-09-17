@@ -201,12 +201,19 @@ const getRecommendedHouses = async (currentHouse: House) => {
   }
 }
 
-onMounted(async () => {
+import { watch } from 'vue'
+
+// existing onMounted fetch
+onMounted(fetchHouse)
+
+// refactored fetch logic into a function
+async function fetchHouse() {
+  loading.value = true
+  error.value = null
   try {
     const id = Number(route.params.id)
     house.value = await getHouseById(id)
 
-    // Fetch recommendations after getting the current house
     if (house.value) {
       await getRecommendedHouses(house.value)
     }
@@ -215,7 +222,15 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+// watch route changes
+watch(
+  () => route.params.id,
+  () => {
+    fetchHouse()
+  },
+)
 
 function editHouse() {
   if (!house.value) return

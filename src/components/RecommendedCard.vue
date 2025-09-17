@@ -12,7 +12,7 @@
         {{ house.streetName }} {{ house.houseNumber
         }}<span v-if="house.numberAddition"> {{ house.numberAddition }}</span>
       </h4>
-      <p class="recommended-price">€ {{ formatPrice(house.price) }}</p>
+      <p class="recommended-price">{{ formatPrice(house.price) }}</p>
       <p class="recommended-location">{{ house.zip }} {{ house.city }}</p>
       <div class="recommended-details">
         <div class="detail-item">
@@ -52,8 +52,9 @@ const handleImageError = (event: Event) => {
   img.src = 'https://images.unsplash.com/photo-1558618047-d1c00293b19c?w=400&h=300&fit=crop'
 }
 
+// getting price formatted in euros instead of hard coding the euro sign
 const formatPrice = (price: number): string => {
-  return price.toLocaleString('en-US')
+  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(price)
 }
 
 const getImageUrl = (imageUrl: string): string => {
