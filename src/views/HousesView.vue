@@ -110,7 +110,6 @@ const fetchHouses = async () => {
 
   try {
     houses.value = await getHouses()
-    console.log('Fetched houses:', houses.value)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load houses'
     console.error('Error fetching houses:', err)

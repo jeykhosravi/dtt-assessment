@@ -60,7 +60,6 @@ const formatPrice = (price: number): string => {
 const getImageUrl = (imageUrl: string): string => {
   // If no image URL is provided, return the fallback
   if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined') {
-    console.log('No valid image URL found, using fallback')
     return 'https://images.unsplash.com/photo-1558618047-d1c00293b19c?w=400&h=300&fit=crop'
   }
 
@@ -74,8 +73,6 @@ const getImageUrl = (imageUrl: string): string => {
   const fullUrl = imageUrl.startsWith('/')
     ? `${apiBaseUrl}${imageUrl}`
     : `${apiBaseUrl}/${imageUrl}`
-
-  console.log('Image URL resolved to:', fullUrl)
   return fullUrl
 }
 </script>

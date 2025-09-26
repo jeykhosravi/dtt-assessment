@@ -127,8 +127,6 @@ const cancelDelete = () => {
 
 const confirmDelete = async () => {
   try {
-    console.log(`Attempting to delete house with ID: ${props.house.id}`)
-
     // Be explicit with the URL and include a trailing slash if needed
     const endpoint = `/houses/${props.house.id}/`
 
@@ -139,8 +137,6 @@ const confirmDelete = async () => {
         'X-Api-Key': import.meta.env.VITE_API_KEY as string,
       },
     })
-
-    console.log(`Successfully deleted house with ID: ${props.house.id}`)
     showDeleteModal.value = false
 
     // Emit an event that the parent (HousesView) can listen for
@@ -150,7 +146,6 @@ const confirmDelete = async () => {
     // Add a fallback in case the event system doesn't trigger a UI update
     setTimeout(() => {
       if (document.contains(document.querySelector(`[data-house-id="${props.house.id}"]`))) {
-        console.log('House still visible in DOM, refreshing page')
         window.location.reload()
       }
     }, 500)
@@ -175,7 +170,6 @@ const formatPrice = (price: number): string => {
 const getImageUrl = (imageUrl: string): string => {
   // If no image URL is provided, return the fallback
   if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined') {
-    console.log('No valid image URL found, using fallback')
     return 'https://images.unsplash.com/photo-1558618047-d1c00293b19c?w=400&h=300&fit=crop'
   }
 
@@ -189,8 +183,6 @@ const getImageUrl = (imageUrl: string): string => {
   const fullUrl = imageUrl.startsWith('/')
     ? `${apiBaseUrl}${imageUrl}`
     : `${apiBaseUrl}/${imageUrl}`
-
-  console.log('Image URL resolved to:', fullUrl)
   return fullUrl
 }
 </script>

@@ -80,8 +80,6 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     headers['Content-Type'] = 'application/json'
   }
 
-  console.log(`Making ${options.method || 'GET'} request to: ${apiUrl}${normalizedEndpoint}`)
-
   // Make the request
   const res = await fetch(`${apiUrl}${normalizedEndpoint}`, {
     ...options,
@@ -90,8 +88,6 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
       ...(options.headers || {}), // Allow caller to override headers
     },
   })
-
-  console.log(`${options.method || 'GET'} response status from ${normalizedEndpoint}:`, res.status)
 
   // Handle errors
   if (!res.ok) {
@@ -117,8 +113,8 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
         return text ? (JSON.parse(text) as T) : ({} as T)
       }
       return {} as T
-    } catch (error) {
-      console.log('No JSON response for DELETE request:', error)
+    } catch {
+      // ...existing code...
       return {} as T
     }
   }
@@ -155,9 +151,8 @@ export async function getHouses(): Promise<House[]> {
 }
 
 export async function getHouseById(id: number): Promise<House> {
-  console.log('Fetching house with ID:', id) // Debug log
+  // ...existing code...
   const apiHouses = await apiRequest<HouseApiResponse[]>(`/houses/${id}`)
-  console.log('API response:', apiHouses) // Debug log
 
   if (!apiHouses.length) {
     throw new Error('House not found')
@@ -209,14 +204,6 @@ export async function createOrUpdateHouse(
   houseFormData.append('constructionYear', houseData.constructionYear.toString())
   houseFormData.append('hasGarage', houseData.hasGarage.toString())
 
-  console.log(houseId ? 'Updating house with data:' : 'Creating house with data:', {
-    price: houseData.price,
-    bedrooms: houseData.bedrooms,
-    bathrooms: houseData.bathrooms,
-    size: houseData.size,
-    // Other fields omitted for brevity
-  })
-
   // Create or update the house - API requires POST for both operations
   const endpoint = houseId ? `/houses/${houseId}` : `/houses`
   const url = `${apiUrl}${endpoint}`
@@ -253,7 +240,6 @@ export async function createOrUpdateHouse(
 
     // Handle empty response (common for update operations)
     if (!responseText.trim()) {
-      console.log('Empty response received from API')
 
       if (!houseId) {
         throw new Error('Empty response when creating house')
@@ -356,16 +342,11 @@ export async function createOrUpdateHouse(
     }
   }
 
-  console.log(
-    houseId ? 'House updated successfully' : 'House created successfully with ID:',
-    house.id,
-  )
-
   // Upload the image to the house if image is provided
   // In edit mode, image might be null/undefined to keep the existing image
   if (houseData.image) {
     try {
-      console.log('Uploading image for house ID:', house.id)
+      // ...existing code...
 
       // Create a new FormData just for the image
       const imageFormData = new FormData()
@@ -386,8 +367,6 @@ export async function createOrUpdateHouse(
         console.error('Failed to upload image:', await uploadRes.text())
         // Continue with the house object we have
       } else {
-        console.log('Image uploaded successfully')
-
         // After successful image upload, get the updated house with image URL
         try {
           const updatedHouse = await getHouseById(house.id)
@@ -399,7 +378,6 @@ export async function createOrUpdateHouse(
       }
     } catch (uploadError) {
       console.error('Failed to upload image:', uploadError)
-      // Continue with the house object we have
     }
   }
 
