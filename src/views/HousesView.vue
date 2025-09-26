@@ -15,52 +15,11 @@
       </div>
 
       <!-- Search and Sort Controls -->
-      <div class="controls-bar">
-        <!-- Search Input -->
-        <div class="search-bar">
-          <div class="search-input-container">
-            <img src="/images/search.png" alt="Search" class="search-icon" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search for a house"
-              class="search-input"
-            />
-            <button v-if="searchQuery" @click="searchQuery = ''" class="clear-btn">
-              <img src="/images/clear.png" alt="Clear search" />
-            </button>
-          </div>
-        </div>
+      <div class="controls-container">
+        <SearchInput v-model:search-query="searchQuery" :results-count="filteredHouses.length" />
 
-        <!-- Sort Buttons -->
-        <div class="sort-bar">
-          <button
-            @click="toggleSort('price')"
-            class="sort-btn"
-            :class="{ active: sortBy === 'price' }"
-          >
-            Price
-            <span v-if="sortBy === 'price'" class="sort-direction">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </button>
-          <button
-            @click="toggleSort('size')"
-            class="sort-btn"
-            :class="{ active: sortBy === 'size' }"
-          >
-            Size
-            <span v-if="sortBy === 'size'" class="sort-direction">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </button>
-        </div>
+        <SortButtons v-model:sort-by="sortBy" v-model:sort-direction="sortDirection" />
       </div>
-
-      <!-- Results indicator -->
-      <h2 v-if="searchQuery" class="results-indicator">
-        {{ filteredHouses.length }} {{ filteredHouses.length === 1 ? 'result' : 'results' }} found
-      </h2>
 
       <div v-if="loading" class="loading">
         <p>Loading houses...</p>
@@ -76,11 +35,12 @@
       </div>
 
       <!-- No search results -->
-      <div v-else-if="searchQuery && filteredHouses.length === 0" class="no-results">
-        <img src="/images/no result.png" alt="No results" class="no-results-image" />
-        <p class="no-results-title">No results found.</p>
-        <p class="no-results-subtitle">Please try another keyword.</p>
-      </div>
+      <NoResults
+        v-if="searchQuery && filteredHouses.length === 0"
+        title="No results found."
+        subtitle="Please try another keyword."
+        image-alt="No search results"
+      />
 
       <div v-else class="houses-list">
         <HouseCard v-for="house in filteredHouses" :key="house.id" :house="house" />
@@ -93,6 +53,9 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HouseCard from '@/components/HouseCard.vue'
+import SearchInput from '@/components/SearchInput.vue'
+import SortButtons from '@/components/SortButtons.vue'
+import NoResults from '@/components/NoResults.vue'
 import { getHouses, type House } from '@/services/api'
 
 const router = useRouter()
@@ -115,24 +78,6 @@ const fetchHouses = async () => {
     console.error('Error fetching houses:', err)
   } finally {
     loading.value = false
-  }
-}
-
-// toggle sort function
-const toggleSort = (type: 'price' | 'size') => {
-  if (sortBy.value === type) {
-    if (sortDirection.value === 'asc') {
-      // First click: ascending
-      sortDirection.value = 'desc'
-    } else {
-      // Second click: descending -> clear sort
-      sortBy.value = null
-      sortDirection.value = 'asc'
-    }
-  } else {
-    // If clicking a different button, set new sort type and default to ascending
-    sortBy.value = type
-    sortDirection.value = 'asc'
   }
 }
 
@@ -291,147 +236,13 @@ const filteredHouses = computed(() => {
   transform: scale(0.95);
 }
 
-.controls-bar {
+.controls-container {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
   margin-bottom: 1rem;
   flex-wrap: wrap;
-}
-
-.search-bar {
-  flex: 1;
-  min-width: 300px;
-}
-
-.search-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 400px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  width: 16px;
-  height: 16px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 40px;
-  border: 1px solid var(--color-tertiary-light);
-  background-color: var(--color-tertiary-light);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: var(--font-secondary);
-  &:focus {
-    outline: none;
-  }
-}
-
-.clear-btn {
-  position: absolute;
-  right: 8px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
-
-.clear-btn img {
-  width: 18px;
-  height: 18px;
-}
-
-.sort-bar {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.sort-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 16px;
-  border: none;
-  background-color: #c8c8c8;
-  color: white;
-  font-size: 14px;
-  font-family: var(--font-secondary);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100px;
-  border-radius: 0;
-}
-
-.sort-btn:first-child {
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-}
-
-.sort-btn:last-child {
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-.sort-btn:hover {
-  opacity: 0.9;
-}
-
-.sort-btn:focus {
-  outline: none;
-}
-
-.sort-btn.active {
-  background-color: #e65541;
-  color: white;
-}
-
-.sort-direction {
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.no-results {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-secondary);
-  font-family: var(--font-secondary);
-}
-
-.no-results-image {
-  width: 300px;
-  height: 100%;
-  margin-bottom: 20px;
-  opacity: 0.6;
-}
-
-.no-results-title {
-  font-size: 18px;
-  font-weight: 400;
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.no-results-subtitle {
-  font-size: 18px;
-  margin: 0;
-  color: var(--text-secondary);
 }
 
 .houses-count {
@@ -510,25 +321,10 @@ const filteredHouses = computed(() => {
     justify-content: center;
   }
 
-  .controls-bar {
+  .controls-container {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-  }
-
-  .search-bar {
-    min-width: auto;
-  }
-
-  .sort-bar {
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .sort-btn {
-    flex: 1;
-    justify-content: center;
-    min-width: 80px;
   }
 
   .houses-count {
@@ -543,19 +339,6 @@ const filteredHouses = computed(() => {
   .error,
   .no-houses {
     font-size: var(--body-mobile);
-  }
-
-  .no-results-image {
-    width: 200px;
-    height: 100%;
-  }
-
-  .no-results-title {
-    font-size: 16px;
-  }
-
-  .no-results-subtitle {
-    font-size: 14px;
   }
 
   .retry-btn {

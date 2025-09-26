@@ -13,195 +13,137 @@
       <!-- Form -->
       <form @submit.prevent="handleSubmit" class="create-form">
         <!-- Street name -->
-        <div class="form-group">
-          <label for="streetName">Street name*</label>
-          <input
-            id="streetName"
-            v-model="form.streetName"
-            type="text"
-            placeholder="Enter the street name"
-            :class="{ error: errors.streetName }"
-          />
-          <div v-if="errors.streetName" class="error-message">{{ errors.streetName }}</div>
-        </div>
+        <FormField
+          id="streetName"
+          label="Street name*"
+          type="text"
+          v-model="form.streetName"
+          placeholder="Enter the street name"
+          :error-message="errors.streetName"
+        />
 
         <!-- House number and Addition row -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="houseNumber">House number*</label>
-            <input
-              id="houseNumber"
-              v-model.number="form.houseNumber"
-              type="number"
-              placeholder="Enter house number"
-              :class="{ error: errors.houseNumber }"
-            />
-            <div v-if="errors.houseNumber" class="error-message">{{ errors.houseNumber }}</div>
-          </div>
+        <FormRow>
+          <FormField
+            id="houseNumber"
+            label="House number*"
+            type="number"
+            v-model="form.houseNumber"
+            placeholder="Enter house number"
+            :error-message="errors.houseNumber"
+          />
 
-          <div class="form-group">
-            <label for="numberAddition">Addition (optional)</label>
-            <input
-              id="numberAddition"
-              v-model="form.numberAddition"
-              type="text"
-              placeholder="e.g. A"
-            />
-          </div>
-        </div>
+          <FormField
+            id="numberAddition"
+            label="Addition (optional)"
+            type="text"
+            v-model="form.numberAddition"
+            placeholder="e.g. A"
+          />
+        </FormRow>
 
         <!-- Postal code -->
-        <div class="form-group">
-          <label for="zip">Postal code*</label>
-          <input
-            id="zip"
-            v-model="form.zip"
-            type="text"
-            placeholder="e.g. 1000 AB"
-            :class="{ error: errors.zip }"
-          />
-          <div v-if="errors.zip" class="error-message">{{ errors.zip }}</div>
-        </div>
+        <FormField
+          id="zip"
+          label="Postal code*"
+          type="text"
+          v-model="form.zip"
+          placeholder="e.g. 1000 AB"
+          :error-message="errors.zip"
+        />
 
         <!-- City -->
-        <div class="form-group">
-          <label for="city">City*</label>
-          <input
-            id="city"
-            v-model="form.city"
-            type="text"
-            placeholder="e.g. Utrecht"
-            :class="{ error: errors.city }"
-          />
-          <div v-if="errors.city" class="error-message">{{ errors.city }}</div>
-        </div>
+        <FormField
+          id="city"
+          label="City*"
+          type="text"
+          v-model="form.city"
+          placeholder="e.g. Utrecht"
+          :error-message="errors.city"
+        />
 
         <!-- Image Upload Section -->
-        <div class="form-group">
-          <label>Upload picture (PNG or JPG)*</label>
-          <div
-            :class="['image-upload', { 'has-image': imagePreview }]"
-            @click="triggerFileInput"
-            @dragover.prevent
-            @drop.prevent="handleDrop"
-          >
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              @change="handleFileSelect"
-              style="display: none"
-            />
-            <div v-if="!imagePreview" class="upload-placeholder">
-              <div class="upload-icon-container">
-                <img src="/images/upload.png" alt="Upload" class="upload-icon" />
-              </div>
-            </div>
-            <div v-else class="image-preview">
-              <img :src="imagePreview" alt="Preview" class="preview-image" />
-              <button type="button" @click.stop="removeImage" class="remove-image-btn">
-                <img src="/images/clear-white.png" alt="Remove" />
-              </button>
-            </div>
-          </div>
-          <div v-if="errors.image" class="error-message">{{ errors.image }}</div>
-        </div>
+        <ImageUpload
+          label="Upload picture (PNG or JPG)*"
+          v-model="form.image"
+          v-model:image-preview="imagePreview"
+          :error-message="errors.image"
+        />
 
         <!-- Price -->
-        <div class="form-group">
-          <label for="price">Price*</label>
-          <input
-            id="price"
-            v-model.number="form.price"
-            type="number"
-            placeholder="e.g. €150,000"
-            :class="{ error: errors.price }"
-          />
-          <div v-if="errors.price" class="error-message">{{ errors.price }}</div>
-        </div>
+        <FormField
+          id="price"
+          label="Price*"
+          type="number"
+          v-model="form.price"
+          placeholder="e.g. €150,000"
+          :error-message="errors.price"
+        />
 
         <!-- Size and Garage row -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="size">Size*</label>
-            <input
-              id="size"
-              v-model.number="form.size"
-              type="number"
-              placeholder="e.g. 120m²"
-              :class="{ error: errors.size }"
-            />
-            <div v-if="errors.size" class="error-message">{{ errors.size }}</div>
-          </div>
+        <FormRow>
+          <FormField
+            id="size"
+            label="Size*"
+            type="number"
+            v-model="form.size"
+            placeholder="e.g. 120m²"
+            :error-message="errors.size"
+          />
 
-          <div class="form-group garage-group">
-            <label>Garage*</label>
-            <select v-model="form.hasGarage" class="garage-select">
-              <option value="">Select</option>
-              <option value="true" class="text-secondary">Yes</option>
-              <option value="false" class="text-secondary">No</option>
-            </select>
-          </div>
-        </div>
+          <SelectField
+            label="Garage*"
+            v-model="form.hasGarage"
+            :options="garageOptions"
+            :error-message="errors.hasGarage"
+          />
+        </FormRow>
 
         <!-- Bedrooms and Bathrooms row -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="bedrooms">Bedrooms*</label>
-            <input
-              id="bedrooms"
-              v-model.number="form.bedrooms"
-              type="number"
-              min="1"
-              placeholder="Enter amount"
-              :class="{ error: errors.bedrooms }"
-            />
-            <div v-if="errors.bedrooms" class="error-message">{{ errors.bedrooms }}</div>
-          </div>
+        <FormRow>
+          <FormField
+            id="bedrooms"
+            label="Bedrooms*"
+            type="number"
+            v-model="form.bedrooms"
+            placeholder="Enter amount"
+            :min="1"
+            :error-message="errors.bedrooms"
+          />
 
-          <div class="form-group">
-            <label for="bathrooms">Bathrooms*</label>
-            <input
-              id="bathrooms"
-              v-model.number="form.bathrooms"
-              type="number"
-              min="1"
-              placeholder="Enter amount"
-              :class="{ error: errors.bathrooms }"
-            />
-            <div v-if="errors.bathrooms" class="error-message">{{ errors.bathrooms }}</div>
-          </div>
-        </div>
+          <FormField
+            id="bathrooms"
+            label="Bathrooms*"
+            type="number"
+            v-model="form.bathrooms"
+            placeholder="Enter amount"
+            :min="1"
+            :error-message="errors.bathrooms"
+          />
+        </FormRow>
 
         <!-- Construction date -->
-        <div class="form-group">
-          <label for="constructionYear">Construction date*</label>
-          <input
-            id="constructionYear"
-            v-model.number="form.constructionYear"
-            type="number"
-            min="1900"
-            :max="new Date().getFullYear()"
-            placeholder="e.g. 1990"
-            :class="{ error: errors.constructionYear }"
-          />
-          <div v-if="errors.constructionYear" class="error-message">
-            {{ errors.constructionYear }}
-          </div>
-        </div>
+        <FormField
+          id="constructionYear"
+          label="Construction date*"
+          type="number"
+          v-model="form.constructionYear"
+          placeholder="e.g. 1990"
+          :min="1900"
+          :max="new Date().getFullYear()"
+          :error-message="errors.constructionYear"
+        />
 
         <!-- Description -->
-        <div class="form-group">
-          <label for="description">Description*</label>
-          <textarea
-            id="description"
-            v-model="form.description"
-            placeholder="Enter description"
-            rows="4"
-            :class="{ error: errors.description }"
-          ></textarea>
-          <div v-if="errors.description" class="error-message">{{ errors.description }}</div>
-        </div>
+        <FormField
+          id="description"
+          label="Description*"
+          type="textarea"
+          v-model="form.description"
+          placeholder="Enter description"
+          :rows="4"
+          :error-message="errors.description"
+        />
 
         <!-- Submit Button -->
         <div class="form-actions">
@@ -226,11 +168,21 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { createOrUpdateHouse, getHouseById, type CreateHouseRequest } from '@/services/api'
+import FormField from '@/components/Form/FormField.vue'
+import FormRow from '@/components/Form/FormRow.vue'
+import ImageUpload from '@/components/Form/ImageUpload.vue'
+import SelectField from '@/components/Form/SelectField.vue'
 
 const router = useRouter()
 const route = useRoute()
 const isEditMode = computed(() => route.path.includes('/edit'))
 const houseId = computed(() => (route.params.id ? parseInt(route.params.id as string) : undefined))
+
+// Garage options for select field
+const garageOptions = [
+  { value: 'true', label: 'Yes' },
+  { value: 'false', label: 'No' },
+]
 
 // Form data
 const form = reactive({
@@ -279,45 +231,7 @@ const errors = reactive<Record<string, string>>({})
 const isSubmitting = ref(false)
 
 // Image handling
-const fileInput = ref<HTMLInputElement>()
 const imagePreview = ref<string>('')
-
-const triggerFileInput = () => {
-  fileInput.value?.click()
-}
-
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    setImageFile(file)
-  }
-}
-
-const handleDrop = (event: DragEvent) => {
-  const file = event.dataTransfer?.files[0]
-  if (file && file.type.startsWith('image/')) {
-    setImageFile(file)
-  }
-}
-
-const setImageFile = (file: File) => {
-  form.image = file
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    imagePreview.value = e.target?.result as string
-  }
-  reader.readAsDataURL(file)
-  delete errors.image
-}
-
-const removeImage = () => {
-  form.image = null
-  imagePreview.value = ''
-  if (fileInput.value) {
-    fileInput.value.value = ''
-  }
-}
 
 // Validation
 const validateForm = (): boolean => {
@@ -533,154 +447,6 @@ const handleSubmit = async () => {
   gap: 16px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 140px;
-  gap: 16px;
-}
-
-.form-group label {
-  color: var(--text-primary);
-  font-size: var(--input-label-desktop);
-  font-family: var(--font-secondary);
-  font-weight: 600;
-}
-
-.form-group input,
-.form-group textarea,
-.garage-select {
-  padding: 12px 16px;
-  border: 1px solid var(--color-tertiary-light);
-  border-radius: 8px;
-  font-size: var(--input-field-desktop);
-  font-family: var(--font-secondary);
-  background-color: var(--color-bg2);
-  transition: border-color 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.garage-select:focus {
-  outline: none;
-}
-
-.form-group input.error,
-.form-group textarea.error {
-  border-color: var(--color-primary);
-}
-
-.form-group input[type='number']::-webkit-inner-spin-button,
-.form-group input[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.form-group input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.garage-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 12px center;
-  background-repeat: no-repeat;
-  background-size: 16px;
-  padding-right: 40px;
-}
-
-.garage-select[value=''] {
-  color: var(--text-secondary);
-}
-
-.garage-select option {
-  color: var(--text-secondary);
-}
-
-.garage-select {
-  color: var(--text-secondary);
-}
-
-.text-secondary {
-  color: var(--text-secondary) !important;
-}
-
-.image-upload {
-  border: 2px dashed var(--color-tertiary-dark);
-  max-width: 100px;
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-  min-height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Remove border when image is uploaded */
-.image-upload.has-image {
-  border: none;
-}
-
-.upload-icon-container {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-icon {
-  width: 20px;
-  height: 20px;
-  opacity: 0.7;
-}
-
-.image-preview {
-  position: relative;
-  display: inline-block;
-}
-
-.preview-image {
-  max-width: 100%;
-  height: 100%;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 10px;
-  height: 10px;
-  border: none;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.remove-image-btn img {
-  width: 20px;
-  height: 20px;
-}
-
-.error-message {
-  color: var(--color-primary);
-  font-size: var(--error-desktop);
-  font-family: var(--font-secondary);
-  font-style: italic;
-  margin-top: 4px;
-}
-
 .form-actions {
   margin-top: 24px;
   display: flex;
@@ -749,22 +515,10 @@ const handleSubmit = async () => {
     height: 18px;
   }
 
-  .form-group label {
-    font-size: var(--input-label-mobile);
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
   .submit-btn {
     font-size: var(--btn-mobile);
     width: 100%;
     padding: 12px 24px;
-  }
-
-  .error-message {
-    font-size: var(--error-mobile);
   }
 }
 </style>

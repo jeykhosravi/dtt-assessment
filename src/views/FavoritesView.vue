@@ -9,14 +9,16 @@
       </div>
 
       <div class="favorites-content">
-        <div v-if="favoriteCount === 0" class="no-favorites">
-          <img src="/images/no result.png" alt="No favorites" class="no-favorites-image" />
-          <p class="no-favorites-text">No favorites found.</p>
-          <p class="no-favorites-subtext">
-            Start adding houses to your favorites to see them here!
-          </p>
-          <router-link to="/houses" class="back-to-houses-btn"> Browse Houses </router-link>
-        </div>
+        <NoResults
+          v-if="favoriteCount === 0"
+          title="No favorites found."
+          subtitle="Start adding houses to your favorites to see them here!"
+          image-alt="No favorites"
+        >
+          <template #action>
+            <router-link to="/houses" class="back-to-houses-btn"> Browse Houses </router-link>
+          </template>
+        </NoResults>
 
         <div v-else class="houses-grid">
           <HouseCard v-for="house in favoriteHouses" :key="house.id" :house="house" />
@@ -31,6 +33,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useFavoritesStore } from '@/stores/favorites'
 import { getHouses, type House } from '@/services/api'
 import HouseCard from '@/components/HouseCard.vue'
+import NoResults from '@/components/NoResults.vue'
 
 const favoritesStore = useFavoritesStore()
 const allHouses = ref<House[]>([])
@@ -107,36 +110,6 @@ onUnmounted(() => {
   width: 100%;
 }
 
-.no-favorites {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.no-favorites-image {
-  width: 200px;
-  height: auto;
-  margin-bottom: 24px;
-  opacity: 0.7;
-}
-
-.no-favorites-text {
-  font-family: var(--font-primary);
-  font-size: var(--header-desktop);
-  font-weight: bold;
-  color: var(--color-text);
-  margin-bottom: 12px;
-}
-
-.no-favorites-subtext {
-  font-family: var(--font-primary);
-  font-size: var(--body-desktop);
-  color: var(--color-text-secondary);
-  margin-bottom: 32px;
-}
-
 .back-to-houses-btn {
   background-color: var(--color-primary);
   color: white;
@@ -170,22 +143,6 @@ onUnmounted(() => {
   }
 
   .favorites-count {
-    font-size: var(--body-mobile);
-  }
-
-  .no-favorites {
-    padding: 40px 16px;
-  }
-
-  .no-favorites-image {
-    width: 150px;
-  }
-
-  .no-favorites-text {
-    font-size: var(--header-mobile);
-  }
-
-  .no-favorites-subtext {
     font-size: var(--body-mobile);
   }
 }
