@@ -254,7 +254,6 @@ async function confirmDelete() {
   if (!house.value) return
 
   try {
-    console.log(`Attempting to delete house with ID: ${house.value.id}`)
 
     // Be explicit with the URL and include a trailing slash if needed
     const endpoint = `/houses/${house.value.id}/`
@@ -267,7 +266,6 @@ async function confirmDelete() {
       },
     })
 
-    console.log(`Successfully deleted house with ID: ${house.value.id}`)
     showDeleteModal.value = false
 
     // Navigate to houses route using replace to avoid affecting the history
@@ -512,7 +510,7 @@ async function confirmDelete() {
 }
 
 /* Mobile responsive */
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .house-details-page {
     padding: 0;
   }
