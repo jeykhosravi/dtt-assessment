@@ -20,6 +20,8 @@
           v-model="form.streetName"
           placeholder="Enter the street name"
           :error-message="errors.streetName"
+          @blur="validateField('streetName')"
+          @clear-error="clearFieldError('streetName')"
         />
 
         <!-- House number and Addition row -->
@@ -31,6 +33,8 @@
             v-model="form.houseNumber"
             placeholder="Enter house number"
             :error-message="errors.houseNumber"
+            @blur="validateField('houseNumber')"
+            @clear-error="clearFieldError('houseNumber')"
           />
 
           <FormField
@@ -50,6 +54,8 @@
           v-model="form.zip"
           placeholder="e.g. 1000 AB"
           :error-message="errors.zip"
+          @blur="validateField('zip')"
+          @clear-error="clearFieldError('zip')"
         />
 
         <!-- City -->
@@ -60,6 +66,8 @@
           v-model="form.city"
           placeholder="e.g. Utrecht"
           :error-message="errors.city"
+          @blur="validateField('city')"
+          @clear-error="clearFieldError('city')"
         />
 
         <!-- Image Upload Section -->
@@ -68,6 +76,7 @@
           v-model="form.image"
           v-model:image-preview="imagePreview"
           :error-message="errors.image"
+          @clear-error="clearFieldError('image')"
         />
 
         <!-- Price -->
@@ -78,6 +87,8 @@
           v-model="form.price"
           placeholder="e.g. €150,000"
           :error-message="errors.price"
+          @blur="validateField('price')"
+          @clear-error="clearFieldError('price')"
         />
 
         <!-- Size and Garage row -->
@@ -89,6 +100,8 @@
             v-model="form.size"
             placeholder="e.g. 120m²"
             :error-message="errors.size"
+            @blur="validateField('size')"
+            @clear-error="clearFieldError('size')"
           />
 
           <SelectField
@@ -96,6 +109,8 @@
             v-model="form.hasGarage"
             :options="garageOptions"
             :error-message="errors.hasGarage"
+            @blur="validateField('hasGarage')"
+            @clear-error="clearFieldError('hasGarage')"
           />
         </FormRow>
 
@@ -109,6 +124,8 @@
             placeholder="Enter amount"
             :min="1"
             :error-message="errors.bedrooms"
+            @blur="validateField('bedrooms')"
+            @clear-error="clearFieldError('bedrooms')"
           />
 
           <FormField
@@ -119,6 +136,8 @@
             placeholder="Enter amount"
             :min="1"
             :error-message="errors.bathrooms"
+            @blur="validateField('bathrooms')"
+            @clear-error="clearFieldError('bathrooms')"
           />
         </FormRow>
 
@@ -132,6 +151,8 @@
           :min="1900"
           :max="new Date().getFullYear()"
           :error-message="errors.constructionYear"
+          @blur="validateField('constructionYear')"
+          @clear-error="clearFieldError('constructionYear')"
         />
 
         <!-- Description -->
@@ -143,6 +164,8 @@
           placeholder="Enter description"
           :rows="4"
           :error-message="errors.description"
+          @blur="validateField('description')"
+          @clear-error="clearFieldError('description')"
         />
 
         <!-- Submit Button -->
@@ -232,6 +255,103 @@ const isSubmitting = ref(false)
 
 // Image handling
 const imagePreview = ref<string>('')
+
+// Individual field validation functions
+const validateField = (fieldName: string) => {
+  // Clear the existing error for this field
+  delete errors[fieldName]
+
+  switch (fieldName) {
+    case 'streetName':
+      if (!form.streetName.trim()) {
+        errors.streetName = 'Street name is required'
+      }
+      break
+
+    case 'houseNumber':
+      const houseNumber = Number(form.houseNumber)
+      if (!form.houseNumber || isNaN(houseNumber) || houseNumber <= 0) {
+        errors.houseNumber = 'House number is required'
+      }
+      break
+
+    case 'zip':
+      if (!form.zip.trim()) {
+        errors.zip = 'Postal code is required'
+      }
+      break
+
+    case 'city':
+      if (!form.city.trim()) {
+        errors.city = 'City is required'
+      }
+      break
+
+    case 'price':
+      const price = Number(form.price)
+      if (!form.price || isNaN(price) || price <= 0) {
+        errors.price = 'Price is required'
+      }
+      break
+
+    case 'size':
+      const size = Number(form.size)
+      if (!form.size || isNaN(size) || size <= 0) {
+        errors.size = 'Size is required'
+      }
+      break
+
+    case 'bedrooms':
+      const bedrooms = Number(form.bedrooms)
+      if (form.bedrooms === '' || isNaN(bedrooms) || bedrooms < 0) {
+        errors.bedrooms = 'Number of bedrooms is required'
+      }
+      break
+
+    case 'bathrooms':
+      const bathrooms = Number(form.bathrooms)
+      if (form.bathrooms === '' || isNaN(bathrooms) || bathrooms < 0) {
+        errors.bathrooms = 'Number of bathrooms is required'
+      }
+      break
+
+    case 'constructionYear':
+      const constructionYear = Number(form.constructionYear)
+      if (
+        !form.constructionYear ||
+        isNaN(constructionYear) ||
+        constructionYear < 1900 ||
+        constructionYear > new Date().getFullYear()
+      ) {
+        errors.constructionYear = 'Valid construction year is required'
+      }
+      break
+
+    case 'hasGarage':
+      if (form.hasGarage === '') {
+        errors.hasGarage = 'Garage selection is required'
+      }
+      break
+
+    case 'description':
+      if (!form.description.trim()) {
+        errors.description = 'Description is required'
+      }
+      break
+
+    case 'image':
+      if (!isEditMode.value && !form.image) {
+        errors.image = 'Image is required'
+      }
+      break
+  }
+}
+
+const clearFieldError = (fieldName: string) => {
+  if (errors[fieldName]) {
+    delete errors[fieldName]
+  }
+}
 
 // Validation
 const validateForm = (): boolean => {

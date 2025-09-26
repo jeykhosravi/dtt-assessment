@@ -9,10 +9,15 @@
       :type="type"
       :value="modelValue"
       :placeholder="placeholder"
-      :class="{ error: errorMessage }"
+      :class="{
+        error: errorMessage,
+        'error-placeholder':
+          errorMessage && (modelValue === '' || modelValue === null || modelValue === undefined),
+      }"
       :min="min"
       :max="max"
       @input="handleInput"
+      @blur="handleBlur"
     />
 
     <!-- Textarea -->
@@ -22,8 +27,13 @@
       :value="modelValue"
       :placeholder="placeholder"
       :rows="rows"
-      :class="{ error: errorMessage }"
+      :class="{
+        error: errorMessage,
+        'error-placeholder':
+          errorMessage && (modelValue === '' || modelValue === null || modelValue === undefined),
+      }"
       @input="handleInput"
+      @blur="handleBlur"
     />
 
     <!-- Error message -->
@@ -42,16 +52,20 @@ interface Props {
   min?: number
   max?: number
   rows?: number
+  required?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: string | number): void
+  (e: 'blur', value: string | number): void
+  (e: 'clear-error'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: '',
   errorMessage: '',
   rows: 4,
+  required: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -65,7 +79,25 @@ const handleInput = (event: Event) => {
     value = target.value === '' ? '' : Number(target.value)
   }
 
+  // Clear error on new input to improve UX
+  if (props.errorMessage) {
+    emit('clear-error')
+  }
+
   emit('update:modelValue', value)
+}
+
+const handleBlur = (event: Event) => {
+  const target = event.target as HTMLInputElement | HTMLTextAreaElement
+  let value: string | number = target.value
+
+  // Convert to number for number inputs
+  if (props.type === 'number') {
+    value = target.value === '' ? '' : Number(target.value)
+  }
+
+  // Emit blur event for validation
+  emit('blur', value)
 }
 </script>
 
@@ -102,6 +134,12 @@ const handleInput = (event: Event) => {
 .form-group input.error,
 .form-group textarea.error {
   border-color: var(--color-primary);
+}
+
+.form-group input.error-placeholder::placeholder,
+.form-group textarea.error-placeholder::placeholder {
+  color: var(--color-primary);
+  opacity: 1;
 }
 
 .form-group input[type='number']::-webkit-inner-spin-button,

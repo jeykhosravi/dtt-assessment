@@ -43,9 +43,10 @@ interface Props {
 interface Emits {
   (e: 'update:modelValue', value: File | null): void
   (e: 'update:imagePreview', value: string): void
+  (e: 'clear-error'): void
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   imagePreview: '',
   errorMessage: '',
 })
@@ -74,6 +75,11 @@ const handleDrop = (event: DragEvent) => {
 }
 
 const setImageFile = (file: File) => {
+  // Clear error when user selects a new image
+  if (props.errorMessage) {
+    emit('clear-error')
+  }
+
   emit('update:modelValue', file)
   const reader = new FileReader()
   reader.onload = (e) => {

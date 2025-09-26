@@ -3,8 +3,15 @@
     <label>{{ label }}</label>
     <select
       :value="modelValue"
-      :class="['garage-select', { error: errorMessage }]"
+      :class="[
+        'garage-select',
+        {
+          error: errorMessage,
+          'error-placeholder': errorMessage && modelValue === '',
+        },
+      ]"
       @change="handleChange"
+      @blur="handleBlur"
     >
       <option value="">Select</option>
       <option
@@ -31,21 +38,38 @@ interface Props {
   modelValue: string
   options: SelectOption[]
   errorMessage?: string
+  required?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: string): void
+  (e: 'blur', value: string): void
+  (e: 'clear-error'): void
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   errorMessage: '',
+  required: false,
 })
 
 const emit = defineEmits<Emits>()
 
 const handleChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
+
+  // Clear error on new selection to improve UX
+  if (props.errorMessage) {
+    emit('clear-error')
+  }
+
   emit('update:modelValue', target.value)
+}
+
+const handleBlur = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+
+  // Emit blur event for validation
+  emit('blur', target.value)
 }
 </script>
 
@@ -86,6 +110,10 @@ const handleChange = (event: Event) => {
 
 .garage-select.error {
   border-color: var(--color-primary);
+}
+
+.garage-select.error-placeholder {
+  color: var(--color-primary);
 }
 
 .garage-select[value=''] {
